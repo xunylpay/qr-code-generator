@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 
 import Layout from 'components/Layout';
 import Container from 'components/Container';
@@ -17,6 +17,7 @@ const IndexPage = () => {
   const canvasRef = useRef()
   const qrImageRef = useRef()
 
+  const [loading, setLoading] = useState(false)
   const [urlString, setUrlString] = useState('');
   const [merchantString, setMerchantString] = useState('');
 
@@ -34,78 +35,74 @@ const IndexPage = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    const ctx = canvasRef.current.getContext('2d')
-    // Clear canvas
-    ctx.clearRect(0, 0, baseImageDimension[0], baseImageDimension[1]);
+    if (!loading) {
+      setLoading(true)
+      const ctx = canvasRef.current.getContext('2d')
+      // Clear canvas
+      ctx.clearRect(0, 0, baseImageDimension[0], baseImageDimension[1]);
 
-    // Loading baseImg
-    let baseImage = new Image();
-    baseImage.onload = () => {
-      ctx.drawImage(baseImage, 0, 0)
-      // Loading Merchant logo
-      let merchantLogoImage = new Image();
-      merchantLogoImage.onload = () => {
-        ctx.drawImage(merchantLogoImage, logoPosition[0], logoPosition[1], logoDimension, logoDimension)
-        // Writing text
-        const { text, x, y } = { text: merchantString, x: textPosition[0], y: textPosition[1] };
-        const fontSize = 100, fontFamily = 'Arial', color = 'black', textAlign = 'center', textBaseline = 'top';
+      // Loading baseImg
+      let baseImage = new Image();
+      baseImage.onload = () => {
+        ctx.drawImage(baseImage, 0, 0)
+        // Loading Merchant logo
+        let merchantLogoImage = new Image();
+        merchantLogoImage.onload = () => {
+          ctx.drawImage(merchantLogoImage, logoPosition[0], logoPosition[1], logoDimension, logoDimension)
+          // Writing text
+          const { text, x, y } = { text: merchantString, x: textPosition[0], y: textPosition[1] };
+          const fontSize = 100, fontFamily = 'Arial', color = 'black', textAlign = 'center', textBaseline = 'top';
 
-        ctx.beginPath();
-        ctx.font = fontSize + 'px ' + fontFamily;
-        ctx.textAlign = textAlign;
-        ctx.textBaseline = textBaseline;
-        ctx.fillStyle = color;
-        ctx.fillText(text, x, y);
-        ctx.stroke();
-      }
-      const reader = new FileReader();
-      console.log(fileInput.current.files[0])
-      console.log(reader.readAsDataURL(fileInput.current.files[0]))
-
-      if (fileInput.current.files[0]) {
-        merchantLogoImage.src = URL.createObjectURL(fileInput.current.files[0])
-      }
-
-      // Adding the QR to the base image
-      // get svg data
-      const qrImageDataURI = qrImageRef.current.children[0]
-      let xml = new XMLSerializer().serializeToString(qrImageDataURI);
-      // make it base64
-      let svg64 = window.btoa(xml);
-      let b64Start = 'data:image/svg+xml;base64,';
-      // prepend a "header"
-      let image64 = b64Start + svg64;
-      let qrImage = new Image();
-      // set it as the source of the img element
-      qrImage.onload = function () {
-        // draw the image onto the canvas
-        ctx.drawImage(qrImage, qrPosition[0], qrPosition[1], qrCodeDimension, qrCodeDimension);
-
-        // Adding Paymongo Logo to qr
-        let paymongoLogoImage = new Image();
-        paymongoLogoImage.onload = () => {
-          ctx.drawImage(paymongoLogoImage, qrLogoPosition[0], qrLogoPosition[1], qrCodeLogoDimension, qrCodeLogoDimension)
-          // Download Canvas
-          const image = canvasRef.current.toDataURL("image/png", 1.0).replace("image/png", "image/octet-stream");
-          const link = document.createElement('a');
-          link.download = "paymongo-qr.png";
-          link.href = image;
-          link.click();
+          ctx.beginPath();
+          ctx.font = fontSize + 'px ' + fontFamily;
+          ctx.textAlign = textAlign;
+          ctx.textBaseline = textBaseline;
+          ctx.fillStyle = color;
+          ctx.fillText(text, x, y);
+          ctx.stroke();
         }
-        paymongoLogoImage.src = paymongoLogo
+        const reader = new FileReader();
+        console.log(fileInput.current.files[0])
+        console.log(reader.readAsDataURL(fileInput.current.files[0]))
+
+        if (fileInput.current.files[0]) {
+          merchantLogoImage.src = URL.createObjectURL(fileInput.current.files[0])
+        }
+
+        // Adding the QR to the base image
+        // get svg data
+        const qrImageDataURI = qrImageRef.current.children[0]
+        let xml = new XMLSerializer().serializeToString(qrImageDataURI);
+        // make it base64
+        let svg64 = window.btoa(xml);
+        let b64Start = 'data:image/svg+xml;base64,';
+        // prepend a "header"
+        let image64 = b64Start + svg64;
+        let qrImage = new Image();
+        // set it as the source of the img element
+        qrImage.onload = function () {
+          // draw the image onto the canvas
+          ctx.drawImage(qrImage, qrPosition[0], qrPosition[1], qrCodeDimension, qrCodeDimension);
+
+          // Adding Paymongo Logo to qr
+          let paymongoLogoImage = new Image();
+          paymongoLogoImage.onload = () => {
+            ctx.drawImage(paymongoLogoImage, qrLogoPosition[0], qrLogoPosition[1], qrCodeLogoDimension, qrCodeLogoDimension)
+            // Download Canvas
+            const image = canvasRef.current.toDataURL("image/png", 1.0).replace("image/png", "image/octet-stream");
+            const link = document.createElement('a');
+            link.download = "paymongo-qr.png";
+            link.href = image;
+            link.click();
+            setLoading(false)
+          }
+          paymongoLogoImage.src = paymongoLogo
+        }
+        qrImage.src = image64;
       }
-      qrImage.src = image64;
+      baseImage.src = baseTemplate
     }
-    baseImage.src = baseTemplate
-
-
   }
-
-  useEffect(() => {
-
-
-  })
-
 
   return (
     <Layout pageName="home">
@@ -148,8 +145,8 @@ const IndexPage = () => {
                 ref={fileInput}
               />
             </label>
-            <button type="submit">
-              Download
+            <button type="submit" disabled={loading}>
+              {loading ? "Loading" : "Download"}
             </button>
 
             <div className="hidden">
