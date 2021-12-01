@@ -25,12 +25,12 @@ const IndexPage = () => {
   // Sizes
   const qrCodeDimension = 1500;
   const qrCodeLogoDimension = 200;
-  const logoDimension = 500;
+  const logoDimension = 450;
   const baseImageDimension = [2470, 3507];
   const middleOffset = 13.5;
   // Positions
   const textPosition = [baseImageDimension[0] / 2, 800]
-  const logoPosition = [baseImageDimension[0] / 2 - logoDimension / 2 + middleOffset, 200]
+  const logoPosition = [baseImageDimension[0] / 2 - logoDimension / 2 + middleOffset, 230]
   const qrPosition = [baseImageDimension[0] / 2 - qrCodeDimension / 2 + middleOffset, 800]
   const qrLogoPosition = [baseImageDimension[0] / 2 - qrCodeLogoDimension / 2 + 13, 1450]
 
@@ -49,6 +49,7 @@ const IndexPage = () => {
         // Loading Merchant logo
         let merchantLogoImage = new Image();
         merchantLogoImage.onload = () => {
+          console.log(merchantLogoImage)
           ctx.drawImage(merchantLogoImage, logoPosition[0], logoPosition[1], logoDimension, logoDimension)
           // Writing text
           const { text, x, y } = { text: merchantString, x: textPosition[0], y: textPosition[1] };
@@ -61,8 +62,8 @@ const IndexPage = () => {
           ctx.fillStyle = color;
           ctx.fillText(text, x, y);
           ctx.stroke();
+          URL.revokeObjectURL(fileInput.current.files[0])
         }
-
         if (fileInput.current.files[0]) {
           merchantLogoImage.src = URL.createObjectURL(fileInput.current.files[0])
         }
