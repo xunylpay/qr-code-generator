@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, setTimeout } from 'react';
 
 import Layout from 'components/Layout';
 import Container from 'components/Container';
@@ -34,7 +34,7 @@ const IndexPage = () => {
   const qrPosition = [baseImageDimension[0] / 2 - qrCodeDimension / 2 + middleOffset, 800]
   const qrLogoPosition = [baseImageDimension[0] / 2 - qrCodeLogoDimension / 2 + 13, 1450]
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!loading) {
       setLoading(true)
@@ -43,13 +43,12 @@ const IndexPage = () => {
       ctx.clearRect(0, 0, baseImageDimension[0], baseImageDimension[1]);
 
       // Loading baseImg
-      let baseImage = new Image();
+      const baseImage = new Image();
       baseImage.onload = () => {
         ctx.drawImage(baseImage, 0, 0)
         // Loading Merchant logo
         let merchantLogoImage = new Image();
         merchantLogoImage.onload = () => {
-          console.log(merchantLogoImage)
           ctx.drawImage(merchantLogoImage, logoPosition[0], logoPosition[1], logoDimension, logoDimension)
           // Writing text
           const { text, x, y } = { text: merchantString, x: textPosition[0], y: textPosition[1] };
@@ -63,41 +62,43 @@ const IndexPage = () => {
           ctx.fillText(text, x, y);
           ctx.stroke();
           URL.revokeObjectURL(fileInput.current.files[0])
+          // Adding the QR to the base image
+          // get svg data
+          const qrImageDataURI = qrImageRef.current.children[0]
+          let xml = new XMLSerializer().serializeToString(qrImageDataURI);
+          // make it base64
+          let svg64 = window.btoa(xml);
+          let b64Start = 'data:image/svg+xml;base64,';
+          // prepend a "header"
+          let image64 = b64Start + svg64;
+          let qrImage = new Image();
+          // set it as the source of the img element
+          qrImage.onload = function () {
+            // draw the image onto the canvas
+            ctx.drawImage(qrImage, qrPosition[0], qrPosition[1], qrCodeDimension, qrCodeDimension);
+
+            // Adding Paymongo Logo to qr
+            let paymongoLogoImage = new Image();
+            paymongoLogoImage.onload = () => {
+              ctx.drawImage(paymongoLogoImage, qrLogoPosition[0], qrLogoPosition[1], qrCodeLogoDimension, qrCodeLogoDimension)
+              // Download Canvas
+              const image = canvasRef.current.toDataURL("image/png", 1.0).replace("image/png", "image/octet-stream");
+              const link = document.createElement('a');
+              link.download = `${merchantString}paymongo-qr.png`;
+              link.href = image;
+              link.click();
+              setLoading(false)
+            }
+            paymongoLogoImage.src = paymongoLogo
+          }
+          qrImage.src = image64;
         }
         if (fileInput.current.files[0]) {
           merchantLogoImage.src = URL.createObjectURL(fileInput.current.files[0])
         }
-
-        // Adding the QR to the base image
-        // get svg data
-        const qrImageDataURI = qrImageRef.current.children[0]
-        let xml = new XMLSerializer().serializeToString(qrImageDataURI);
-        // make it base64
-        let svg64 = window.btoa(xml);
-        let b64Start = 'data:image/svg+xml;base64,';
-        // prepend a "header"
-        let image64 = b64Start + svg64;
-        let qrImage = new Image();
-        // set it as the source of the img element
-        qrImage.onload = function () {
-          // draw the image onto the canvas
-          ctx.drawImage(qrImage, qrPosition[0], qrPosition[1], qrCodeDimension, qrCodeDimension);
-
-          // Adding Paymongo Logo to qr
-          let paymongoLogoImage = new Image();
-          paymongoLogoImage.onload = () => {
-            ctx.drawImage(paymongoLogoImage, qrLogoPosition[0], qrLogoPosition[1], qrCodeLogoDimension, qrCodeLogoDimension)
-            // Download Canvas
-            const image = canvasRef.current.toDataURL("image/png", 1.0).replace("image/png", "image/octet-stream");
-            const link = document.createElement('a');
-            link.download = `${merchantString}paymongo-qr.png`;
-            link.href = image;
-            link.click();
-            setLoading(false)
-          }
-          paymongoLogoImage.src = paymongoLogo
+        else {
+          alert("Warning: No logo detected.")
         }
-        qrImage.src = image64;
       }
       baseImage.src = baseTemplate
     }
