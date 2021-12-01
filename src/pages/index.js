@@ -23,15 +23,16 @@ const IndexPage = () => {
 
   // Dimensions
   // Sizes
-  const qrCodeDimension = 1250;
+  const qrCodeDimension = 1500;
   const qrCodeLogoDimension = 200;
   const logoDimension = 500;
-  const baseImageDimension = [2470, 3507]
+  const baseImageDimension = [2470, 3507];
+  const middleOffset = 13.5;
   // Positions
-  const textPosition = [baseImageDimension[0] / 2, 820]
-  const logoPosition = [baseImageDimension[0] / 2 - logoDimension / 2, 200]
-  const qrPosition = [baseImageDimension[0] / 2 - qrCodeDimension / 2, 900]
-  const qrLogoPosition = [baseImageDimension[0] / 2 - qrCodeLogoDimension / 2, 1450]
+  const textPosition = [baseImageDimension[0] / 2, 800]
+  const logoPosition = [baseImageDimension[0] / 2 - logoDimension / 2 + middleOffset, 200]
+  const qrPosition = [baseImageDimension[0] / 2 - qrCodeDimension / 2 + middleOffset, 800]
+  const qrLogoPosition = [baseImageDimension[0] / 2 - qrCodeLogoDimension / 2 + 13, 1450]
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -61,9 +62,6 @@ const IndexPage = () => {
           ctx.fillText(text, x, y);
           ctx.stroke();
         }
-        const reader = new FileReader();
-        console.log(fileInput.current.files[0])
-        console.log(reader.readAsDataURL(fileInput.current.files[0]))
 
         if (fileInput.current.files[0]) {
           merchantLogoImage.src = URL.createObjectURL(fileInput.current.files[0])
@@ -91,7 +89,7 @@ const IndexPage = () => {
             // Download Canvas
             const image = canvasRef.current.toDataURL("image/png", 1.0).replace("image/png", "image/octet-stream");
             const link = document.createElement('a');
-            link.download = "paymongo-qr.png";
+            link.download = `${merchantString}paymongo-qr.png`;
             link.href = image;
             link.click();
             setLoading(false)
