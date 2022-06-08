@@ -1,11 +1,11 @@
-import React, { useState, useRef, setTimeout } from 'react';
+import React, { useState, useRef } from 'react';
 
 import Layout from 'components/Layout';
 import Container from 'components/Container';
 import Info from 'components/Info'
 
 import paymongoLogo from '../assets/images/_paymongo.png'
-import baseTemplate from '../assets/images/_base.jpg'
+import baseTemplate from '../assets/images/_base_new.jpg'
 
 import QrCode from 'react-qrcode-svg';
 
@@ -20,19 +20,28 @@ const IndexPage = () => {
   const [loading, setLoading] = useState(false)
   const [urlString, setUrlString] = useState('');
   const [merchantString, setMerchantString] = useState('');
+  const [showUrl, setShowUrl] = useState(false)
 
   // Dimensions
   // Sizes
-  const qrCodeDimension = 1500;
-  const qrCodeLogoDimension = 200;
-  const logoDimension = 450;
-  const baseImageDimension = [2470, 3507];
-  const middleOffset = 13.5;
+  const qrCodeDimension = 2000;
+  const qrCodeLogoDimension = 300;
+  const logoDimension = 300;
+  const baseImageDimension = [2572, 4096];
+  const middleOffset = 40;
   // Positions
-  const textPosition = [baseImageDimension[0] / 2, 800]
-  const logoPosition = [baseImageDimension[0] / 2 - logoDimension / 2 + middleOffset, 230]
-  const qrPosition = [baseImageDimension[0] / 2 - qrCodeDimension / 2 + middleOffset, 800]
-  const qrLogoPosition = [baseImageDimension[0] / 2 - qrCodeLogoDimension / 2 + 13, 1450]
+  const textPosition = [baseImageDimension[0] / 2, 2500]
+  const linkPosition = [baseImageDimension[0] / 2, 2600]
+  const logoPosition = [baseImageDimension[0] / 2 - logoDimension / 2 + middleOffset, 2400]
+
+  const qrPosition = [baseImageDimension[0] / 2 - qrCodeDimension / 2 + middleOffset, 500]
+  const qrLogoPosition = [baseImageDimension[0] / 2 - qrCodeLogoDimension / 2 + middleOffset, 1350]
+
+
+  // QR has https
+  // Link String has no https
+  // Checkbox 
+  // Include Additional Info 
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -48,19 +57,40 @@ const IndexPage = () => {
         ctx.drawImage(baseImage, 0, 0)
         // Loading Merchant logo
         let merchantLogoImage = new Image();
-        merchantLogoImage.onload = () => {
-          ctx.drawImage(merchantLogoImage, logoPosition[0], logoPosition[1], logoDimension, logoDimension)
-          // Writing text
-          const { text, x, y } = { text: merchantString, x: textPosition[0], y: textPosition[1] };
-          const fontSize = 100, fontFamily = 'Arial', color = 'black', textAlign = 'center', textBaseline = 'top';
 
+        const cleanUrlString = urlString.replace('https://', '')
+        let leftOffset = cleanUrlString.length * 17;
+        const marginRight = 130
+        let topOffset = 0
+        merchantLogoImage.onload = () => {
+          if (!showUrl) {
+            topOffset = 40
+            leftOffset = merchantString.length * 17;
+          }
+          ctx.drawImage(merchantLogoImage, logoPosition[0] - leftOffset - marginRight, logoPosition[1], logoDimension, logoDimension)
+          // Writing Business Name
+          const { text_b, x_b, y_b } = { text_b: merchantString, x_b: textPosition[0] - leftOffset + logoDimension / 2, y_b: textPosition[1] + topOffset };
+          const fontSize_b = 100, fontSize_p = 80, fontFamily = 'Manrope', color = 'white', textAlign = 'left', textBaseline = 'middle';
           ctx.beginPath();
-          ctx.font = fontSize + 'px ' + fontFamily;
+          ctx.font = '900 ' + fontSize_b + 'px ' + fontFamily;
           ctx.textAlign = textAlign;
           ctx.textBaseline = textBaseline;
           ctx.fillStyle = color;
-          ctx.fillText(text, x, y);
+          ctx.fillText(text_b, x_b, y_b);
           ctx.stroke();
+
+          if (showUrl) {
+            // Writing Page Link
+            const { text_p, x_p, y_p } = { text_p: cleanUrlString, x_p: linkPosition[0] - leftOffset + logoDimension / 2, y_p: linkPosition[1] };
+            ctx.beginPath();
+            ctx.font = '600 ' + fontSize_p + 'px ' + fontFamily;
+            ctx.textAlign = textAlign;
+            ctx.textBaseline = textBaseline;
+            ctx.fillStyle = color;
+            ctx.fillText(text_p, x_p, y_p);
+            ctx.stroke();
+          }
+
           URL.revokeObjectURL(fileInput.current.files[0])
           // Adding the QR to the base image
           // get svg data
@@ -112,6 +142,7 @@ const IndexPage = () => {
           <form onSubmit={onSubmit}>
             <h2>Generate your QR </h2>
             <div className="label"><p htmlFor="name" className="label__label">Business Name</p></div>
+            <div style={{ fontFamily: 'Manrope' }}>.</div>
             <label className="input__wrapper" htmlFor="name">
               <input
                 className="input"
@@ -123,7 +154,7 @@ const IndexPage = () => {
                 onChange={e => setMerchantString(e.target.value)}
               />
             </label>
-            <div className="label"><p htmlFor="name" className="label__label">Pages URL</p></div>
+            <div className="label"><p htmlFor="name" className="label__label">Enter Page URL</p></div>
             <label className="input__wrapper" htmlFor="url">
               <input
                 className="input"
@@ -131,7 +162,7 @@ const IndexPage = () => {
                 name="url"
                 type="text"
                 value={urlString}
-                placeholder="Your checkout page link"
+                placeholder="https://paymongo.page/l/page-slug"
                 onChange={e => setUrlString(e.target.value)}
               />
             </label>
@@ -144,6 +175,18 @@ const IndexPage = () => {
                 type="file"
                 ref={fileInput}
               />
+            </label>
+
+            <label className="" htmlFor="showUrl">
+              <div className="label"><p htmlFor="name" className="label__label">Show URL? <input
+                className=""
+                id="showUrl"
+                checked={showUrl}
+                name="showUrl"
+                type="checkbox"
+                onClick={e => setShowUrl(!showUrl)}
+              /></p></div>
+
             </label>
             <button type="submit" disabled={loading}>
               {loading ? "Loading" : "Download"}
