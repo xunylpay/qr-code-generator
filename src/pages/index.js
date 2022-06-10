@@ -5,7 +5,7 @@ import Container from 'components/Container';
 import Info from 'components/Info'
 
 import paymongoLogo from '../assets/images/_paymongo.png'
-import baseTemplate from '../assets/images/_base_new.jpg'
+import baseTemplate from '../assets/images/_base_new.png'
 
 import QrCode from 'react-qrcode-svg';
 
@@ -24,17 +24,17 @@ const IndexPage = () => {
 
   // Dimensions
   // Sizes
-  const qrCodeDimension = 2000;
+  const qrCodeDimension = 1700;
   const qrCodeLogoDimension = 300;
   const logoDimension = 300;
   const baseImageDimension = [2572, 4096];
-  const middleOffset = 40;
+  const middleOffset = 0;
   // Positions
-  const textPosition = [baseImageDimension[0] / 2, 2500]
-  const linkPosition = [baseImageDimension[0] / 2, 2600]
-  const logoPosition = [baseImageDimension[0] / 2 - logoDimension / 2 + middleOffset, 2400]
+  const textPosition = [baseImageDimension[0] / 2, 2450]
+  const linkPosition = [baseImageDimension[0] / 2, 2550]
+  const logoPosition = [baseImageDimension[0] / 2 - logoDimension / 2 + middleOffset, 2350]
 
-  const qrPosition = [baseImageDimension[0] / 2 - qrCodeDimension / 2 + middleOffset, 500]
+  const qrPosition = [baseImageDimension[0] / 2 - qrCodeDimension / 2 + middleOffset, 700]
   const qrLogoPosition = [baseImageDimension[0] / 2 - qrCodeLogoDimension / 2 + middleOffset, 1350]
 
 
@@ -59,13 +59,13 @@ const IndexPage = () => {
         let merchantLogoImage = new Image();
 
         const cleanUrlString = urlString.replace('https://', '')
-        let leftOffset = cleanUrlString.length * 17;
-        const marginRight = 130
+        let leftOffset = cleanUrlString.length * 16;
+        const marginRight = 100
         let topOffset = 0
         merchantLogoImage.onload = () => {
           if (!showUrl) {
             topOffset = 40
-            leftOffset = merchantString.length * 17;
+            leftOffset = merchantString.length * 22;
           }
           ctx.drawImage(merchantLogoImage, logoPosition[0] - leftOffset - marginRight, logoPosition[1], logoDimension, logoDimension)
           // Writing Business Name
@@ -116,7 +116,7 @@ const IndexPage = () => {
               const link = document.createElement('a');
               link.download = `${merchantString}paymongo-qr.png`;
               link.href = image;
-              link.click();
+              // link.click();
               setLoading(false)
             }
             paymongoLogoImage.src = paymongoLogo
