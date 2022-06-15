@@ -116,7 +116,7 @@ const IndexPage = () => {
               const link = document.createElement('a');
               link.download = `${merchantString}paymongo-qr.png`;
               link.href = image;
-              // link.click();
+              link.click();
               setLoading(false)
             }
             paymongoLogoImage.src = paymongoLogo
